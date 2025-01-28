@@ -1,0 +1,25 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --reporter spec"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "firebase": "^11.2.0",
+    "firebase-admin": "^13.0.2",
+    "jose": "^5.9.6",
+    "jsonwebtoken": "^9.0.2",
+    "uuid-1345": "^1.0.2"
+  },
+  "devDependencies": {
+    "mocha": "^11.1.0",
+    "chai": "^5.1.2"
+  }
+}
