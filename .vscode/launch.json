@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Launch Discord Bot",
-            "program": "${workspaceFolder}/app/index.js",
+            "program": "${workspaceFolder}/src/app.js",
             "request": "launch",
             "skipFiles": [
                 "<node_internals>/**"

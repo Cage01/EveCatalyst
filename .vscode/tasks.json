@@ -4,7 +4,7 @@
         {
             "label": "Deploy Commands",
             "type": "shell",
-            "command": "node ./app/deploy-commands.js"
+            "command": "node ./src/deploy-commands.js"
         }
     ]
 }

@@ -1,7 +1,7 @@
 const express = require('express');
 const { initializeApp } = require("firebase/app");
-const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } = require("firebase/auth");
-const { getFirestore, doc, setDoc } = require("firebase/firestore");
+const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } = require("firebase/auth");
+const { getFirestore, doc, setDoc, getDoc } = require("firebase/firestore");
 const uuid = require('uuid-1345');
 const crypto = require('crypto');
 
@@ -38,7 +38,7 @@ app.listen(PORT, () => {
 
 //Eve online OAuth2 Callback route
 app.get('/callback', async (request, response) => {
-    
+
     const { code, state } = request.query;
     const authHeader = "Basic " + btoa(process.env.ESI_CLIENT_ID + ":" + process.env.ESI_CLIENT_SECRET);
 
@@ -49,24 +49,35 @@ app.get('/callback', async (request, response) => {
         body: new URLSearchParams({ grant_type: 'authorization_code', code: code })
     });
 
+
+
     // If the response is successful, send the success page and create a new user in Firebase
     if (res.status == 200) {
+        //TODO: Make object orriented for authorization data
         const responseData = await res.json();
         const accessToken = responseData.access_token;
         const refreshToken = responseData.refresh_token;
+
+        const charInfoRes = await fetch("https://esi.evetech.net/verify/?datasource=tranquility", {
+            headers: { 'Authorization': 'Bearer ' + accessToken }
+        });
+        //TODO: Make object orriented for character data
+        const characterData = await charInfoRes.json();
+        const characterID = characterData.CharacterID;
+        const characterName = characterData.CharacterName;
 
         // Calculate the expiration time
         const expiresIn = responseData.expires_in; // 20 minutes
         const expiresAt = new Date();
         expiresAt.setSeconds(expiresAt.getSeconds() + expiresIn);
-        
+
         // Send the success page
         response.sendFile(__dirname + "/view/success.html");
 
         // Create a new user in Firebase
         const userID = generateUUID(state) + "@evecatalystdiscord.com";
         var password = generatePassword(state);
-    
+
         const auth = getAuth();
         createUserWithEmailAndPassword(auth, userID, password)
             .then(async (userCredential) => {
@@ -75,17 +86,27 @@ app.get('/callback', async (request, response) => {
 
                 // Save the access token, refresh token, and expiration time in Firestore
                 await setDoc(doc(db, "users", user.uid), {
+                    character_id: characterID,
+                    character_name: characterName,
                     access_token: accessToken,
                     refresh_token: refreshToken,
                     expires: expiresAt
                 });
+
+                // Premptively sign out the user
+                signOut(auth)
+                    .then(() => {
+                        console.log("User signed out");
+                    }).catch((error) => {
+                        console.log(error);
+                    });
 
             })
             .catch((error) => {
                 const errorCode = error.code;
                 const errorMessage = error.message;
                 console.log(errorCode + ":" + errorMessage);
-                // ..
+
             });
     } else {
         //TODO: Log some error for me to investigate later
@@ -97,7 +118,6 @@ app.get('/callback', async (request, response) => {
 //Firebase Login Route
 app.get('/login', async (request, response) => {
     const { token } = request.query;
-    const authHeader = "Basic " + btoa(process.env.ESI_CLIENT_ID + ":" + process.env.ESI_CLIENT_SECRET);
 
     const userID = generateUUID(token) + "@evecatalystdiscord.com";
     var password = generatePassword(token);
@@ -105,18 +125,32 @@ app.get('/login', async (request, response) => {
     const auth = getAuth();
     signInWithEmailAndPassword(auth, userID, password)
         .then((userCredential) => {
-            // Signed up 
+            // Signed in
             const user = userCredential.user;
             console.log(user);
             response.send(user.toJSON());
-            // ...
         })
         .catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
             console.log(errorCode + ":" + errorMessage);
-            // ..
+            response.status(404).send("No user found");
         });
+});
+
+
+app.get('/character', async (request, response) => {
+    const { uid } = request.query;
+
+    const docRef = doc(db, "users", uid);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        response.send(data);
+    } else {
+        response.send("No such document!");
+    }
 });
 // #endregion
 
