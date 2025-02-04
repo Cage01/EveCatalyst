@@ -2,9 +2,17 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Deploy Commands",
+            "label": "Run_Tests",
             "type": "shell",
-            "command": "node ./src/deploy-commands.js"
+            "command": "npm run test"
+        },
+        {
+            "label": "Deploy_Commands",
+            "type": "shell",
+            "command": "node ./src/deploy-commands.js",
+            "dependsOn": [
+                "Run_Tests"
+            ]
         }
     ]
 }

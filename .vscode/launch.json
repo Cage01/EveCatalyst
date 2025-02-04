@@ -12,16 +12,8 @@
                 "<node_internals>/**"
             ],
             "type": "node",
-            "preLaunchTask": "Deploy Commands"
-        },
-        {
-            "name": "Launch Server",
-            "program": "${workspaceRoot}/server/index.js",
-            "request": "launch",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "type": "node"
+            "preLaunchTask": "Deploy_Commands",
+            
         }
     ],
 }
