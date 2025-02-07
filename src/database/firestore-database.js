@@ -35,12 +35,22 @@ class Firestore {
         return docSnap.exists();
     }
 
+    async getUser(userID) {
+        const docSnap = await this.getDoc("users", userID);
+        if (docSnap.exists()) {
+            return {success: true, value: docSnap.data()};
+        }
+
+        return {success: false, error: "User does not exist"};
+    }
+
     async createUser(email, password, data) {
         try {
             var user = null;
             try {
                 user = (await createUserWithEmailAndPassword(this.auth, email, password)).user;
             } catch (error) { 
+                console.log(error);
                 user = (await this.signIn(email, password)).value.user;
             }
             
