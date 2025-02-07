@@ -18,8 +18,6 @@ router.get('/callback', async (request, response) => {
         body: new URLSearchParams({ grant_type: 'authorization_code', code: code })
     });
 
-
-
     // If the response is successful, send the success page and create a new user in Firebase
     if (res.status == 200) {
         //TODO: Make object orriented for authorization data
