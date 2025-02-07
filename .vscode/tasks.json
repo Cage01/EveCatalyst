@@ -2,9 +2,17 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "Lint",
+            "type": "shell",
+            "command": "npx eslint ./src/**/*.js"
+        },
+        {
             "label": "Run_Tests",
             "type": "shell",
-            "command": "npm run test"
+            "command": "npm run test",
+            "dependsOn": [
+                "Lint"
+            ]
         },
         {
             "label": "Deploy_Commands",
