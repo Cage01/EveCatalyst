@@ -1,6 +1,6 @@
 const { initializeApp } = require("firebase/app");
 const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence } = require("firebase/auth");
-const { getFirestore, doc, setDoc, getDoc, deleteDoc,  } = require("firebase/firestore");
+const { getFirestore, doc, setDoc, getDoc, deleteDoc, updateDoc } = require("firebase/firestore");
 
 
 //TODO: May need to write a queue system to handle multiple requests, since only one user can be signed in at a time
@@ -28,7 +28,7 @@ class Firestore {
 
     getAuth() {
         return this.auth;
-    }  
+    }
 
     async doesUserExist(email) {
         const docSnap = await this.getDoc("users_public", email);
@@ -38,10 +38,10 @@ class Firestore {
     async getUser(userID) {
         const docSnap = await this.getDoc("users", userID);
         if (docSnap.exists()) {
-            return {success: true, value: docSnap.data()};
+            return { success: true, value: docSnap.data() };
         }
 
-        return {success: false, error: "User does not exist"};
+        return { success: false, error: "User does not exist" };
     }
 
     async createUser(email, password, data) {
@@ -49,11 +49,11 @@ class Firestore {
             var user = null;
             try {
                 user = (await createUserWithEmailAndPassword(this.auth, email, password)).user;
-            } catch (error) { 
+            } catch (error) {
                 console.log(error);
                 user = (await this.signIn(email, password)).value.user;
             }
-            
+
 
             //Add the user to the users and users_public collections
             await this.setDoc("users", user.uid, data);
@@ -82,7 +82,7 @@ class Firestore {
                 await this.signOut();
                 return { success: true };
             }
-            
+
             return { success: false, error: "User does not exist" };
         } catch (error) {
             //console.log("Error deleting user \n" + error.stack);
@@ -111,6 +111,16 @@ class Firestore {
         }
     }
 
+    async isSetupComplete(userID) {
+        const docSnap = await this.getDoc("users", userID);
+        if (docSnap.exists()) {
+            if (docSnap.data().setup_complete != undefined) {
+                return docSnap.data().setup_complete;
+            }
+        }
+
+        return false;
+    }
 
 
     /* 
@@ -121,6 +131,15 @@ class Firestore {
     async setDoc(collection, docID, data) {
         //TODO: Sign in user, run this function, then sign out
         return await setDoc(doc(this.db, collection, docID), data);
+    }
+
+    /* 
+    *  @param {string} collection - The collection to set the document in (users)
+    *  @param {string} docID - The document ID to set (The user ID)
+    *  @param {Object} data - The data to set (Comes in the form of a JSON object)
+    */
+    async updateDoc(collection, docID, data) {
+        return await updateDoc(doc(this.db, collection, docID), data);
     }
 
     /* 

@@ -9,6 +9,10 @@ class EveCharacter {
         this.clientID = data.ClientID;
     }
 
+    setCorporationID(corporationID) {
+        this.corporationID = corporationID;
+    }
+
     isTokenExpired() {
         return new Date() > this.expiresOn;
     }
@@ -21,6 +25,7 @@ class EveCharacter {
         return {
             CharacterID: this.characterID,
             CharacterName: this.characterName,
+            CorporationID: this.corporationID,
             ExpiresOn: this.expiresOn.toISOString(),
             Scopes: this.scopes.join(' '),
             TokenType: this.tokenType,

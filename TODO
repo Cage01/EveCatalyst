@@ -1,2 +1,6 @@
-TODO: Convert backend server to be Firebase Cloud functions
-TODO: Write unit tests for cloud functions
+TODO: During setup, if you timeout your response it continues down the chain of other responses. This should exit out of the setup completely
+TODO: Setup embeds for notifications https://embed.dan.onl/
+TODO: Embed notifications should have station locations and images
+TODO: Pull images from Eve image servers https://developers.eveonline.com/docs/services/image-server/
+TODO: For the setup process consider defering the original reply until the entire process is compelete and return an embed
+TODO: Add station refuling notifications

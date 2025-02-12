@@ -1,6 +1,7 @@
 const { MessageFlags } = require('discord.js');
 const { Firestore } = require('../../database/firestore-database.js');
 const { Utility } = require('../../utility.js');
+
 require('dotenv').config()
 
 async function authenticate(interaction) {
@@ -31,8 +32,8 @@ async function authenticate(interaction) {
 
     if (signInResult.success && userExists) {
         const user = await firestore.getUser(signInResult.value.user.uid);
-        messageText = 'Logged in as **' + user.value.character_name + '**';
-        await interaction.reply({ content: messageText });
+        messageText = 'Logged in as: **' + user.value.character_name + '**';
+        await interaction.reply({ content: messageText, flags: MessageFlags.Ephemeral });
     } else {
         await interaction.reply({ content: `Click [here](${url}) to authenticate`, flags: MessageFlags.Ephemeral });
 
@@ -47,14 +48,13 @@ async function authenticate(interaction) {
 
         if (signInResult.success) {
             console.log(signInResult.value.user.email + " Signed in");
-            //var user = signInResult.value.user;
 
             //Get user data from Firestore
             const user = await firestore.getUser(signInResult.value.user.uid);
 
             //Send the welcome message to the Discord server
-            messageText = 'Welcome **' + user.value.character_name + '**';
-            await interaction.editReply({ content: messageText });
+            messageText = 'Logged in as: **' + user.value.character_name + '**';
+            await interaction.editReply({ content: messageText, flags: MessageFlags.Ephemeral });
 
         } else {
             console.log(signInResult.error.stack);
@@ -64,7 +64,7 @@ async function authenticate(interaction) {
 
 
     await firestore.signOut();
-    return messageText + '\n\n';
+    return messageText + '\n';
 }
 
 module.exports = { authenticate };

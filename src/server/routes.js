@@ -20,7 +20,6 @@ router.get('/callback', async (request, response) => {
 
     // If the response is successful, send the success page and create a new user in Firebase
     if (res.status == 200) {
-        //TODO: Make object orriented for authorization data
         const responseData = new EveAuthorization(await res.json());
 
         const charInfoRes = await fetch("https://esi.evetech.net/verify/?datasource=tranquility", {
@@ -28,6 +27,13 @@ router.get('/callback', async (request, response) => {
         });
 
         const characterData = new EveCharacter(await charInfoRes.json());
+
+        // A second fetch is required to get the corporation ID
+        const corpIDRes = await fetch("https://esi.evetech.net/latest/characters/" + characterData.characterID, {
+            headers: { 'Authorization': 'Bearer ' + responseData.accessToken }
+        });
+
+        characterData.corporationID = (await corpIDRes.json()).corporation_id;
 
         // Calculate the expiration time
         const expiresIn = responseData.expiresIn; // 20 minutes
@@ -43,6 +49,7 @@ router.get('/callback', async (request, response) => {
         const result = await firestore.createUser(newEmail, newPassword, {
             character_id: characterData.characterID,
             character_name: characterData.characterName,
+            corporation_id: characterData.corporationID,
             access_token: responseData.accessToken,
             refresh_token: responseData.refreshToken,
             expires: expiresAt
@@ -57,8 +64,6 @@ router.get('/callback', async (request, response) => {
         }
 
     } else {
-        //TODO: Log some error for me to investigate later
-
         response.sendFile(__dirname + "/view/error.html");
     }
 });

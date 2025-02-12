@@ -1,3 +1,5 @@
+const { EmbedBuilder } = require('discord.js');
+
 const uuid = require('uuid-1345');
 const crypto = require('crypto');
 
@@ -27,6 +29,18 @@ class Utility {
         const userData = btoa(guildID + ":" + owner.user.tag + ":" + owner.user.id);
 
         return { email: this.generateEmail(userData), password: this.generatePassword(userData), owner: owner, guildID: guildID, token: userData };
+    }
+
+    static createSimpleEmbed(title, description) {
+        const embed = new EmbedBuilder()
+            .setTitle(title)
+            .setColor("#00b0f4");
+
+        if (description !== undefined) {
+            embed.setDescription(description);
+        }
+
+        return embed;
     }
 }
 
